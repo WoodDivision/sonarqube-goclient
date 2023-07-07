@@ -12,7 +12,7 @@ type QualityGates struct {
 
 func (q *QualityGates) GetByProject(options *qualitygates.GetByProjectOptions) (*qualitygates.GetByProjectObject, error) {
 	formatUrl := fmt.Sprintf("%s/%s?project=%s", q.client.GetSonarqubeUrl(), qualitygates.Endpoint, options.Project)
-	req, err := http.NewRequest("GET", formatUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, formatUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -21,4 +21,8 @@ func (q *QualityGates) GetByProject(options *qualitygates.GetByProjectOptions) (
 		return nil, err
 	}
 	return &res, nil
+}
+
+func (q *QualityGates) Search(options *qualitygates.SearchOptions) (*qualitygates.SearchObject, error) {
+
 }
