@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/go-querystring/query"
+	"log"
 	"net/http"
+	"net/url"
 )
 
 type Errors struct {
@@ -13,13 +16,19 @@ type Errors struct {
 
 type Client struct {
 	url, user, pass string
+	baseUrl         *url.URL
 	HTTPClient      *http.Client
 	QualityGates    *QualityGates
 }
 
-func NewClient(url string, user string, pass string) *Client {
+func NewClient(sonarUrl string, user string, pass string) *Client {
+	pars, err := url.Parse(sonarUrl)
+	if err != nil {
+		log.Printf("Wrong url for SonarQube")
+		return nil
+	}
 	c := &Client{
-		url:        url,
+		baseUrl:    pars,
 		user:       user,
 		pass:       pass,
 		HTTPClient: &http.Client{},
@@ -28,11 +37,17 @@ func NewClient(url string, user string, pass string) *Client {
 	return c
 }
 
-func (c *Client) GetSonarqubeUrl() string {
-	return c.url
-}
-
-func (c *Client) SendRequest(req *http.Request, v interface{}) error {
+func (c *Client) SendRequest(method string, u *url.URL, v interface{}) error {
+	req := &http.Request{
+		Method:     method,
+		URL:        u,
+		Proto:      "HTTP/1.1",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Header:     make(http.Header),
+		Host:       u.Host,
+	}
+	log.Printf("%#v", req)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.SetBasicAuth(c.user, c.pass)
@@ -55,5 +70,22 @@ func (c *Client) SendRequest(req *http.Request, v interface{}) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("%#v", v)
 	return nil
+}
+
+func (c *Client) SetUrlOpt(path string, opt interface{}) *url.URL {
+	u := *c.baseUrl
+	u.Opaque = u.Path + path
+
+	if opt != nil {
+		q, err := query.Values(opt)
+		if err != nil {
+			log.Printf("wrong req")
+			return nil
+		}
+		u.RawQuery = q.Encode()
+	}
+	log.Printf("%#v", u)
+	return &u
 }

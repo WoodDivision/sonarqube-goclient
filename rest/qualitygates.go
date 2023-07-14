@@ -1,28 +1,25 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
-	"sonarqube-goclient/rest/qualitygates"
 )
 
 type QualityGates struct {
 	client *Client
 }
 
-func (q *QualityGates) GetByProject(options *qualitygates.GetByProjectOptions) (*qualitygates.GetByProjectObject, error) {
-	formatUrl := fmt.Sprintf("%s/%s?project=%s", q.client.GetSonarqubeUrl(), qualitygates.Endpoint, options.Project)
-	req, err := http.NewRequest(http.MethodGet, formatUrl, nil)
-	if err != nil {
-		return nil, err
+func (q *QualityGates) GetByProject(opt *GetByProjectOptions) (*GetByProjectObject, error) {
+	u := q.client.SetUrlOpt("api/qualitygates/get_by_project", &opt)
+	obj := GetByProjectObject{}
+	if err := q.client.SendRequest(http.MethodGet, u, &obj); err != nil {
 	}
-	res := qualitygates.GetByProjectObject{}
-	if err := q.client.SendRequest(req, &res); err != nil {
-		return nil, err
-	}
-	return &res, nil
+	return &obj, nil
 }
 
-func (q *QualityGates) Search(options *qualitygates.SearchOptions) (*qualitygates.SearchObject, error) {
-
+func (q *QualityGates) Search(opt *SearchOptions) (*SearchObject, error) {
+	u := q.client.SetUrlOpt("api/qualitygates/search", &opt)
+	obj := SearchObject{}
+	if err := q.client.SendRequest(http.MethodGet, u, &obj); err != nil {
+	}
+	return &obj, nil
 }
