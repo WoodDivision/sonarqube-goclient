@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"sonarqube-goclient/rest"
-	"sonarqube-goclient/rest/qualitygates"
 )
 
 func main() {
@@ -12,8 +11,7 @@ func main() {
 	pass := os.Getenv("SONARQUBE_PASS")
 	url := os.Getenv("SONARQUBE_URL")
 	c := rest.NewClient(url, user, pass)
-	opt := qualitygates.GetByProjectOptions{Project: "awf-robot"}
-	gate, _ := c.QualityGates.GetByProject(&opt)
-
-	fmt.Printf("%s", gate.QualityGate.Name)
+	opt := rest.SearchOptions{GateName: "Critical Issue", PageSize: 100, Page: 1}
+	search, _ := c.QualityGates.Search(&opt)
+	fmt.Printf("%#v", search)
 }
