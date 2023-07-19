@@ -37,8 +37,8 @@ type SearchPaging struct {
 
 type SearchOptions struct {
 	GateName string `url:"gateName"`
-	Page     int    `url:"page"`
-	PageSize int    `url:"pageSize"`
-	Query    string `url:"query"`
-	Selected string `url:"selected"`
+	Page     int    `url:"page,omitempty"`
+	PageSize int    `url:"pageSize,omitempty"`
+	Query    string `url:"query,omitempty"`
+	Selected string `url:"selected,omitempty"`
 }
