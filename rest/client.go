@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/go-querystring/query"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -47,7 +48,6 @@ func (c *Client) SendRequest(method string, u *url.URL, v interface{}) error {
 		Header:     make(http.Header),
 		Host:       u.Host,
 	}
-	log.Printf("%#v", req)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.SetBasicAuth(c.user, c.pass)
@@ -65,7 +65,13 @@ func (c *Client) SendRequest(method string, u *url.URL, v interface{}) error {
 
 		return fmt.Errorf("unknown error, status code: %d", res.StatusCode)
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("Unknow Error in Body.Close")
+			return
+		}
+	}(res.Body)
 	err = json.NewDecoder(res.Body).Decode(&v)
 	if err != nil {
 		return err
@@ -86,6 +92,5 @@ func (c *Client) SetUrlOpt(path string, opt interface{}) *url.URL {
 		}
 		u.RawQuery = q.Encode()
 	}
-	log.Printf("%#v", u)
 	return &u
 }
